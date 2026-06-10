@@ -19,7 +19,7 @@ enum SectionFieldType: string
 
     public function component(): string
     {
-        return match ($this) {
+        $name = match ($this) {
             self::Text => 'sections.text',
             self::Textarea => 'sections.textarea',
             self::Number => 'sections.number',
@@ -31,5 +31,13 @@ enum SectionFieldType: string
             self::ImageUpload => 'sections.image-upload',
             self::DownloadableFile => 'sections.downloadable-file',
         };
+
+        // If the component has been published to the app's views directory, use it directly.
+        // Otherwise, fall back to the package's namespaced component.
+        if (view()->exists('components.'.$name)) {
+            return $name;
+        }
+
+        return 'dynamic-content::'.$name;
     }
 }

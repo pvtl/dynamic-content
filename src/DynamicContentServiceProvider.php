@@ -33,7 +33,7 @@ class DynamicContentServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'dynamic-content');
 
-        Blade::anonymousComponentPath(__DIR__.'/../resources/views/components');
+        Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'dynamic-content');
 
         Livewire::component('admin.dynamic-content', DynamicContent::class);
         Livewire::component('admin.create-dynamic-content', CreateDynamicContent::class);
