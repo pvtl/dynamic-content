@@ -1,6 +1,9 @@
 @props(['field' => [], 'value' => null])
 
-@php $currentValue = $value ?? $field['default'] ?? null; @endphp
+@php
+    $currentValue = $value ?? $field['default'] ?? null;
+    $options = is_callable($field['options']) ? call_user_func($field['options']) : $field['options'];
+@endphp
 
 <flux:field class="p-3 {{ $field['class'] }}">
     <flux:label>{{ $field['name'] }}</flux:label>
@@ -8,7 +11,7 @@
         <flux:description>{{ $field['description'] }}</flux:description>
     @endif
     <flux:select :value="$currentValue" {{ $attributes->except('name') }}>
-        @foreach ($field['options'] as $optionValue => $optionLabel)
+        @foreach ($options as $optionValue => $optionLabel)
             <flux:select.option :value="$optionValue" :selected="$currentValue === $optionValue">
                 {{ $optionLabel }}
             </flux:select.option>

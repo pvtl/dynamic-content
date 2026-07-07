@@ -1,6 +1,9 @@
 @props(['field' => [], 'value' => null])
 
-@php $currentValue = $value ?? $field['default'] ?? []; @endphp
+@php
+    $currentValue = $value ?? $field['default'] ?? [];
+    $options = is_callable($field['options']) ? call_user_func($field['options']) : $field['options'];
+@endphp
 
 <flux:field class="p-3 {{ $field['class'] }}">
     <flux:label>{{ $field['name'] }}</flux:label>
@@ -8,7 +11,7 @@
         <flux:description>{{ $field['description'] }}</flux:description>
     @endif
     <flux:select variant="listbox" multiple indicator="checkbox" {{ $attributes->except('name') }}>
-        @foreach ($field['options'] as $optionValue => $optionLabel)
+        @foreach ($options as $optionValue => $optionLabel)
             <flux:select.option :value="$optionValue" :selected="in_array($optionValue, (array) $currentValue)">
                 {{ $optionLabel }}
             </flux:select.option>

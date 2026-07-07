@@ -19,7 +19,7 @@
     <div class="mt-2 space-y-3">
         @forelse ($rows as $rowKey => $row)
             <flux:card wire:key="{{ $name }}-{{ $rowKey }}" class="p-3">
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap">
                     @foreach ($nestedFields as $nestedField)
                         <x-dynamic-component
                             :component="$nestedField['type']->component()"

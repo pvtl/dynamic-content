@@ -98,6 +98,43 @@ return [
 
 Refer to the schema comment at the top of `config/sections.php` for the full list of available field types and options.
 
+### Dynamic (database-backed) options
+
+For `Select`, `Multiselect`, `RadioButton`, and `CheckboxGroup` fields, `options` is normally a static `value => label` array. If you need the list to come from the database (e.g. a dropdown of `Meal` records), you **cannot** just query the database directly inside `config/sections.php`:
+
+```php
+// ❌ Don't do this — crashes the app.
+'options' => \App\Models\Meal::all()->mapWithKeys(fn ($meal) => [$meal->id => $meal->name]),
+```
+
+Config files are `require`d by Laravel's `LoadConfiguration` bootstrapper very early in the request lifecycle — **before any service providers (including the database provider) have booted**. Querying the database at this point fails, and Laravel's own attempt to render that error also fails (the `view` binding isn't registered yet either), which surfaces as a confusing `Target class [view] does not exist` error instead of the real cause.
+
+Instead, set `options` to a **static callable array** — `[Class::class, 'method']` — pointing at a method that returns the options. It's resolved lazily, only when the field is actually rendered:
+
+```php
+// app/Models/Meal.php
+public static function dynamicContentOptions(): array
+{
+    return static::query()->orderBy('name')->pluck('name', 'id')->all();
+}
+```
+
+```php
+// config/sections.php
+[
+    'name'       => 'Featured Meal',
+    'slug'       => 'featured_meal',
+    'description'=> 'Meal to highlight in this section.',
+    'type'       => SectionFieldType::Select,
+    'class'      => 'w-1/2',
+    'default'    => null,
+    'validation' => ['nullable'],
+    'options'    => [\App\Models\Meal::class, 'dynamicContentOptions'],
+],
+```
+
+**Do not use a `Closure`** for this (e.g. `fn () => Meal::all()->pluck(...)`) — closures cannot be serialized by `php artisan config:cache` and will break config caching for the entire application. A `[Class::class, 'method']` array is just two strings, so it caches fine and is resolved with `call_user_func()` only when needed.
+
 ## Creating Frontend Section Components
 
 Each section type needs a Blade component that renders it on the frontend. Components live in `resources/views/components/{component_directory}/` (default: `resources/views/components/dynamic/`).

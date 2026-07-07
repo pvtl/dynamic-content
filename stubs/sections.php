@@ -27,8 +27,14 @@ use Pvtl\DynamicContent\Enums\SectionFieldType;
  *   class       (string)           - Tailwind classes applied to the field wrapper (e.g. 'w-1/2').
  *   default     (mixed)            - Default value used when a new section is added.
  *   validation  (array)            - Laravel validation rules applied on save.
- *   options     (array)            - Key/value pairs for Select, Multiselect, RadioButton, and
+ *   options     (array|callable)   - Key/value pairs for Select, Multiselect, RadioButton, and
  *                                    CheckboxGroup fields. Empty array for all other types.
+ *                                    May also be a `[Class::class, 'method']` static callable,
+ *                                    resolved lazily when the field is rendered — useful for
+ *                                    DB-backed option lists (e.g. [Meal::class, 'options']).
+ *                                    Do NOT use a Closure here: config files are parsed before
+ *                                    the database connection is ready, and Closures cannot be
+ *                                    exported by `php artisan config:cache`.
  *   fields      (array)            - Repeater fields only. List of nested field definitions
  *                                    (same Field keys as above) rendered for every repeater row.
  *                                    Any field type may be nested, including another Repeater.
