@@ -8,6 +8,7 @@ enum SectionFieldType: string
 {
     case Text = 'text';
     case Textarea = 'textarea';
+    case RichEditor = 'rich_editor';
     case Number = 'number';
     case Bool = 'bool';
     case Select = 'select';
@@ -22,6 +23,7 @@ enum SectionFieldType: string
         $name = match ($this) {
             self::Text => 'sections.text',
             self::Textarea => 'sections.textarea',
+            self::RichEditor => 'sections.rich-editor',
             self::Number => 'sections.number',
             self::Bool => 'sections.bool',
             self::Select => 'sections.select',

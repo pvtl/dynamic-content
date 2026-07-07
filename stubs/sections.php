@@ -21,8 +21,9 @@ use Pvtl\DynamicContent\Enums\SectionFieldType;
  *                                    content JSON column.
  *   description (string)           - Helper text shown below the field label in the admin UI.
  *   type        (SectionFieldType) - Field input type. Available types:
- *                                      Text, Textarea, Number, Bool, Select, Multiselect,
- *                                      RadioButton, CheckboxGroup, ImageUpload, DownloadableFile
+ *                                      Text, Textarea, RichEditor, Number, Bool, Select,
+ *                                      Multiselect, RadioButton, CheckboxGroup, ImageUpload,
+ *                                      DownloadableFile
  *   class       (string)           - Tailwind classes applied to the field wrapper (e.g. 'w-1/2').
  *   default     (mixed)            - Default value used when a new section is added.
  *   validation  (array)            - Laravel validation rules applied on save.
