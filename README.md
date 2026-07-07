@@ -120,6 +120,7 @@ Create `resources/views/components/dynamic/homepage-hero.blade.php`:
     $body       = $attrs['body'] ?? null;
     $layout     = $attrs['layout'] ?? 'left';
     $bgImage    = $attrs['background_image'] ?? null;
+    $highlights = $attrs['highlights'] ?? [];
 
     $alignClass = match ($layout) {
         'center' => 'text-center items-center',
@@ -127,17 +128,15 @@ Create `resources/views/components/dynamic/homepage-hero.blade.php`:
         default  => 'text-left items-start',
     };
 
-    $imageUrl = $bgImage
-        ? \Illuminate\Support\Facades\Storage::disk(config('dynamic_content.disk'))->url($bgImage)
-        : null;
+    $imageUrl = dcGetFileUrl($bgImage);
 @endphp
 
 <section class="relative overflow-hidden bg-zinc-900">
     @if ($imageUrl)
-        <img src="{{ $imageUrl }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-50" />
+        <img src="{{ $imageUrl }}" class="absolute inset-0 h-full w-full object-cover opacity-50"/>
     @endif
 
-    <div class="relative mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
+    <x-public.container class="relative px-6 py-24 lg:px-8 lg:py-32">
         <div class="flex flex-col {{ $alignClass }} gap-6">
             @if ($heading)
                 <h1 class="text-4xl font-bold tracking-tight text-white sm:text-5xl">
@@ -146,10 +145,24 @@ Create `resources/views/components/dynamic/homepage-hero.blade.php`:
             @endif
 
             @if ($body)
-                <p class="max-w-2xl text-lg text-white/80">{{ $body }}</p>
+                <div class="max-w-2xl text-white/80">{!! $body !!}</div>
             @endif
         </div>
-    </div>
+
+        @forelse($highlights as $highlight)
+            @if ($highlight['image'])
+                <div class="w-1/2">
+                    <img src="{{ dcGetFileUrl($highlight['image']) }}" class="w-full"/>
+                </div>
+            @endif
+
+            @if($highlight['description'])
+                <div class="max-w-2xl text-white/80">{!! $highlight['description'] !!}</div>
+            @endif
+        @empty
+            Nothing here
+        @endforelse
+    </x-public.container>
 </section>
 ```
 

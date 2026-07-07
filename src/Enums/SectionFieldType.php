@@ -17,6 +17,7 @@ enum SectionFieldType: string
     case CheckboxGroup = 'checkbox_group';
     case ImageUpload = 'image_upload';
     case DownloadableFile = 'downloadable_file';
+    case Repeater = 'repeater';
 
     public function component(): string
     {
@@ -32,6 +33,7 @@ enum SectionFieldType: string
             self::CheckboxGroup => 'sections.checkbox-group',
             self::ImageUpload => 'sections.image-upload',
             self::DownloadableFile => 'sections.downloadable-file',
+            self::Repeater => 'sections.repeater',
         };
 
         // If the component has been published to the app's views directory, use it directly.

@@ -63,6 +63,28 @@ class SectionManager extends Component
         unset($this->sections[$key]);
     }
 
+    public function addRepeaterRow(string $path): void
+    {
+        $fieldConfig = $this->resolveFieldConfig($path);
+
+        if (! $fieldConfig) {
+            return;
+        }
+
+        $rows = (array) data_get($this, $path, []);
+        $rows[$this->generateRowKey()] = $this->defaultRowValues($fieldConfig['fields'] ?? []);
+
+        data_set($this, $path, $rows);
+    }
+
+    public function removeRepeaterRow(string $path, string $rowKey): void
+    {
+        $rows = (array) data_get($this, $path, []);
+        unset($rows[$rowKey]);
+
+        data_set($this, $path, $rows);
+    }
+
     public function sortSections(string $id, int $position): void
     {
         $keys = array_keys($this->sections);
@@ -120,17 +142,18 @@ class SectionManager extends Component
     protected function processSectionUploads(): void
     {
         $this->eachSectionField(
-            callback: function (string $sectionKey, array $sectionData, array $field): void {
-                $value = $sectionData['fields'][$field['slug']] ?? null;
+            callback: function (string $path, array $field): void {
+                $value = data_get($this, $path);
 
                 if (! ($value instanceof TemporaryUploadedFile)) {
                     return;
                 }
 
                 $disk = config('dynamic_content.disk');
-                $existingPath = $this->existingFilePath($sectionKey, $field['slug']);
-                $path = $value->store('sections', $disk);
-                $this->sections[$sectionKey]['fields'][$field['slug']] = $path;
+                $existingPath = $this->existingFilePath($path);
+                $storedPath = $value->store('sections', $disk);
+
+                data_set($this, $path, $storedPath);
 
                 if ($existingPath) {
                     Storage::disk($disk)->delete($existingPath);
@@ -146,9 +169,9 @@ class SectionManager extends Component
         $attributes = [];
 
         $this->eachSectionField(
-            callback: function (string $sectionKey, array $sectionData, array $field) use (&$rules, &$attributes): void {
-                $rules["sections.{$sectionKey}.fields.{$field['slug']}"] = $field['validation'];
-                $attributes["sections.{$sectionKey}.fields.{$field['slug']}"] = $field['name'];
+            callback: function (string $path, array $field) use (&$rules, &$attributes): void {
+                $rules[$path] = $field['validation'];
+                $attributes[$path] = $field['name'];
             },
             skipTypes: self::UPLOAD_FIELD_TYPES,
         );
@@ -167,26 +190,104 @@ class SectionManager extends Component
                 continue;
             }
 
-            foreach ($config['fields'] as $field) {
-                if ($onlyTypes && ! in_array($field['type'], $onlyTypes, strict: true)) {
-                    continue;
-                }
+            $this->walkFields($config['fields'], "sections.{$sectionKey}.fields", $callback, $onlyTypes, $skipTypes);
+        }
+    }
 
-                if ($skipTypes && in_array($field['type'], $skipTypes, strict: true)) {
-                    continue;
-                }
+    protected function walkFields(array $fields, string $path, callable $callback, array $onlyTypes, array $skipTypes): void
+    {
+        foreach ($fields as $field) {
+            $fieldPath = "{$path}.{$field['slug']}";
 
-                $callback($sectionKey, $sectionData, $field);
+            $matchesOnly = ! $onlyTypes || in_array($field['type'], $onlyTypes, strict: true);
+            $matchesSkip = $skipTypes && in_array($field['type'], $skipTypes, strict: true);
+
+            if ($matchesOnly && ! $matchesSkip) {
+                $callback($fieldPath, $field);
+            }
+
+            if ($field['type'] === SectionFieldType::Repeater) {
+                $rows = (array) data_get($this, $fieldPath, []);
+
+                foreach (array_keys($rows) as $rowKey) {
+                    $this->walkFields($field['fields'] ?? [], "{$fieldPath}.{$rowKey}", $callback, $onlyTypes, $skipTypes);
+                }
             }
         }
     }
 
-    protected function existingFilePath(string $sectionKey, string $fieldSlug): ?string
+    protected function resolveFieldConfig(string $path): ?array
     {
+        $segments = explode('.', $path);
+        $sectionKey = $segments[1] ?? null;
+        $sectionSlug = $sectionKey ? ($this->sections[$sectionKey]['slug'] ?? null) : null;
+        $config = $sectionSlug ? ($this->sectionConfigs[$sectionSlug] ?? null) : null;
+
+        if (! $config) {
+            return null;
+        }
+
+        $fields = $config['fields'];
+        $current = null;
+        $expectingFieldSlug = true;
+
+        foreach (array_slice($segments, 3) as $segment) {
+            if (! $expectingFieldSlug) {
+                // This segment is a repeater row key, not a field slug — skip over it.
+                $expectingFieldSlug = true;
+
+                continue;
+            }
+
+            $current = collect($fields)->first(fn (array $field): bool => $field['slug'] === $segment);
+
+            if (! $current) {
+                return null;
+            }
+
+            if ($current['type'] === SectionFieldType::Repeater) {
+                $fields = $current['fields'] ?? [];
+                $expectingFieldSlug = false;
+            }
+        }
+
+        return $current;
+    }
+
+    protected function defaultRowValues(array $fields): array
+    {
+        return collect($fields)
+            ->mapWithKeys(fn (array $field) => [
+                $field['slug'] => $field['type'] === SectionFieldType::Repeater ? [] : ($field['default'] ?? null),
+            ])
+            ->all();
+    }
+
+    protected function generateRowKey(): string
+    {
+        return uniqid('row_');
+    }
+
+    protected function existingFilePath(string $path): ?string
+    {
+        [$sectionKey, $relativePath] = $this->splitFieldPath($path);
+
         $sectionId = $this->sections[$sectionKey]['id'] ?? null;
 
-        return $sectionId
-            ? DynamicContentSection::find($sectionId)?->content[$fieldSlug] ?? null
-            : null;
+        if (! $sectionId) {
+            return null;
+        }
+
+        $content = DynamicContentSection::query()->find($sectionId)?->content;
+
+        return $content ? data_get($content, $relativePath) : null;
+    }
+
+    /** @return array{0: string, 1: string} */
+    protected function splitFieldPath(string $path): array
+    {
+        $segments = explode('.', $path);
+
+        return [$segments[1], implode('.', array_slice($segments, 3))];
     }
 }

@@ -23,12 +23,18 @@ use Pvtl\DynamicContent\Enums\SectionFieldType;
  *   type        (SectionFieldType) - Field input type. Available types:
  *                                      Text, Textarea, RichEditor, Number, Bool, Select,
  *                                      Multiselect, RadioButton, CheckboxGroup, ImageUpload,
- *                                      DownloadableFile
+ *                                      DownloadableFile, Repeater
  *   class       (string)           - Tailwind classes applied to the field wrapper (e.g. 'w-1/2').
  *   default     (mixed)            - Default value used when a new section is added.
  *   validation  (array)            - Laravel validation rules applied on save.
  *   options     (array)            - Key/value pairs for Select, Multiselect, RadioButton, and
  *                                    CheckboxGroup fields. Empty array for all other types.
+ *   fields      (array)            - Repeater fields only. List of nested field definitions
+ *                                    (same Field keys as above) rendered for every repeater row.
+ *                                    Any field type may be nested, including another Repeater.
+ *                                    Stored content for a Repeater field is an associative array
+ *                                    keyed by a generated row id — always iterate its values,
+ *                                    never rely on numeric/sequential keys.
  *
  * Frontend rendering:
  *   Each section's component receives the stored field values as an $attrs array:
@@ -67,7 +73,7 @@ return [
                 'name' => 'Body',
                 'slug' => 'body',
                 'description' => 'Supporting paragraph beneath the headline.',
-                'type' => SectionFieldType::Textarea,
+                'type' => SectionFieldType::RichEditor,
                 'class' => 'w-full',
                 'default' => '',
                 'validation' => ['required', 'string'],
@@ -85,6 +91,38 @@ return [
                     'left' => 'Left',
                     'center' => 'Center',
                     'right' => 'Right',
+                ],
+            ],
+            [
+                'name' => 'Highlights',
+                'slug' => 'highlights',
+                'description' => 'Repeatable highlight cards displayed beneath the hero.',
+                'type' => SectionFieldType::Repeater,
+                'class' => 'w-full',
+                'default' => [],
+                'validation' => ['array'],
+                'options' => [],
+                'fields' => [
+                    [
+                        'name' => 'Image',
+                        'slug' => 'image',
+                        'description' => 'Highlight image.',
+                        'type' => SectionFieldType::ImageUpload,
+                        'class' => 'w-1/2',
+                        'default' => null,
+                        'validation' => ['nullable', 'image', 'max:2048'],
+                        'options' => [],
+                    ],
+                    [
+                        'name' => 'Description',
+                        'slug' => 'description',
+                        'description' => 'Rich text content for this highlight.',
+                        'type' => SectionFieldType::RichEditor,
+                        'class' => 'w-full',
+                        'default' => '',
+                        'validation' => ['required', 'string'],
+                        'options' => [],
+                    ],
                 ],
             ],
         ],
