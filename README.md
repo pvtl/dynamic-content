@@ -61,6 +61,12 @@ return [
 
 The published `routes/dynamic_content.php` contains the admin CRUD routes. Customise them as needed — add middleware, change URIs, or wrap them in a route group to suit your application's auth setup.
 
+## Helpers
+
+The package ships a global helpers file (`src/helpers.php`, autoloaded via Composer) with small utility functions for working with stored field values in your frontend section components:
+
+- `dcGetFileUrl(?string $file): ?string` — Resolves a stored file path (from an `ImageUpload` or `DownloadableFile` field) to a public URL using the configured `dynamic_content.disk`, or `null` if no file is set.
+
 ## Defining Sections
 
 Edit the published `config/sections.php` to define the section types available in the admin panel. The `homepage-hero` example is included and ready to use:
