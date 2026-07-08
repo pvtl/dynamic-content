@@ -3,7 +3,7 @@
     "description": "Dynamic content management with configurable sections for Laravel Livewire and Flux UI applications",
     "type": "library",
     "license": "MIT",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "require": {
         "php": "^8.4",
         "illuminate/support": "^13.0",
