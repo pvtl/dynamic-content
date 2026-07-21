@@ -13,6 +13,7 @@ use Pvtl\DynamicContent\Livewire\Admin\CreateDynamicContent;
 use Pvtl\DynamicContent\Livewire\Admin\DeleteDynamicContent;
 use Pvtl\DynamicContent\Livewire\Admin\DynamicContent;
 use Pvtl\DynamicContent\Livewire\Admin\EditDynamicContent;
+use Pvtl\DynamicContent\Livewire\Admin\ImportExportDynamicContent;
 use Pvtl\DynamicContent\Livewire\Admin\SectionManager;
 use Pvtl\DynamicContent\Livewire\DynamicContentRenderer;
 
@@ -39,6 +40,7 @@ class DynamicContentServiceProvider extends ServiceProvider
         Livewire::component('admin.create-dynamic-content', CreateDynamicContent::class);
         Livewire::component('admin.edit-dynamic-content', EditDynamicContent::class);
         Livewire::component('admin.delete-dynamic-content', DeleteDynamicContent::class);
+        Livewire::component('admin.import-export-dynamic-content', ImportExportDynamicContent::class);
         Livewire::component('admin.section-manager', SectionManager::class);
         Livewire::component('dynamic-content-renderer', DynamicContentRenderer::class);
 

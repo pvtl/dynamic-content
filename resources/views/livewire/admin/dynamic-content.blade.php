@@ -23,7 +23,7 @@
                 <flux:table.columns>
                     <flux:table.column>{{ __('Slug') }}</flux:table.column>
                     <flux:table.column>{{ __('Description') }}</flux:table.column>
-                    <flux:table.column>{{ __('Actions') }}</flux:table.column>
+                    <flux:table.column class="w-px whitespace-nowrap">{{ __('Actions') }}</flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>
@@ -37,7 +37,7 @@
                                 {{ $item->description ?: '—' }}
                             </flux:table.cell>
 
-                            <flux:table.cell>
+                            <flux:table.cell class="w-px whitespace-nowrap">
                                 <div class="flex items-center gap-2">
                                     <flux:button variant="ghost"
                                         size="sm"
@@ -46,6 +46,8 @@
                                         :href="route('admin.dynamic-content.edit', $item)">
                                         {{ __('Edit') }}
                                     </flux:button>
+
+                                    <livewire:admin.import-export-dynamic-content :content="$item" :key="'import-export-'.$item->id" />
 
                                     <livewire:admin.delete-dynamic-content :content="$item" :key="'delete-'.$item->id" />
                                 </div>
