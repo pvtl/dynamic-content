@@ -17,6 +17,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Preview Layout
+    |--------------------------------------------------------------------------
+    |
+    | The Blade layout component used by the full-page editor preview.
+    | For example, "layouts.public" renders the preview in <x-layouts.public>.
+    |
+    */
+    'preview_layout' => 'layouts.public',
+
+    /*
+    |--------------------------------------------------------------------------
     | Section Component Directory
     |--------------------------------------------------------------------------
     |

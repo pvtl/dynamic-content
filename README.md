@@ -56,6 +56,9 @@ return [
     // Filesystem disk for section image/file uploads.
     'disk' => env('DYNAMIC_CONTENT_DISK', 'public'),
 
+    // Layout component used by the editor preview (<x-layouts.public>).
+    'preview_layout' => 'layouts.public',
+
     // Blade component directory for frontend section renderers.
     // 'dynamic' resolves a section component named 'homepage-hero'
     // to <x-dynamic.homepage-hero>.
@@ -71,7 +74,7 @@ The published `routes/dynamic_content.php` contains the admin CRUD routes. Custo
 
 The package ships a global helpers file (`src/helpers.php`, autoloaded via Composer) with small utility functions for working with stored field values in your frontend section components:
 
-- `dcGetFileUrl(?string $file): ?string` — Resolves a stored file path (from an `ImageUpload` or `DownloadableFile` field) to a public URL using the configured `dynamic_content.disk`, or `null` if no file is set.
+- `dcGetFileUrl(string|TemporaryUploadedFile|null $file): ?string` — Resolves a stored file path or temporary preview upload to a public URL using the configured `dynamic_content.disk`, or `null` if no file is set.
 
 ## Defining Sections
 

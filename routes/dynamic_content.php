@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Permission;
 use Illuminate\Support\Facades\Route;
 use Pvtl\DynamicContent\Livewire\Admin\CreateDynamicContent;
 use Pvtl\DynamicContent\Livewire\Admin\DynamicContent;

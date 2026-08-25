@@ -12,7 +12,9 @@ use Pvtl\DynamicContent\Commands\PublishSectionsCommand;
 use Pvtl\DynamicContent\Livewire\Admin\CreateDynamicContent;
 use Pvtl\DynamicContent\Livewire\Admin\DeleteDynamicContent;
 use Pvtl\DynamicContent\Livewire\Admin\DynamicContent;
+use Pvtl\DynamicContent\Livewire\Admin\DynamicContentPreview;
 use Pvtl\DynamicContent\Livewire\Admin\EditDynamicContent;
+use Pvtl\DynamicContent\Livewire\Admin\FullPageDynamicContentEditor;
 use Pvtl\DynamicContent\Livewire\Admin\ImportExportDynamicContent;
 use Pvtl\DynamicContent\Livewire\Admin\SectionManager;
 use Pvtl\DynamicContent\Livewire\DynamicContentRenderer;
@@ -37,8 +39,10 @@ class DynamicContentServiceProvider extends ServiceProvider
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'dynamic-content');
 
         Livewire::component('admin.dynamic-content', DynamicContent::class);
+        Livewire::component('admin.dynamic-content-preview', DynamicContentPreview::class);
         Livewire::component('admin.create-dynamic-content', CreateDynamicContent::class);
         Livewire::component('admin.edit-dynamic-content', EditDynamicContent::class);
+        Livewire::component('admin.full-page-dynamic-content-editor', FullPageDynamicContentEditor::class);
         Livewire::component('admin.delete-dynamic-content', DeleteDynamicContent::class);
         Livewire::component('admin.import-export-dynamic-content', ImportExportDynamicContent::class);
         Livewire::component('admin.section-manager', SectionManager::class);

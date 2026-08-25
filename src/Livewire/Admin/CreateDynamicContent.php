@@ -30,7 +30,7 @@ class CreateDynamicContent extends Component
     }
 
     #[On('dc-sections-saved')]
-    public function onSectionsSaved(): void
+    public function onSectionsSaved(?string $editorId = null): void
     {
         Flux::toast(__('Changes have been saved'), variant: 'success', heading: __('Dynamic content created'));
 

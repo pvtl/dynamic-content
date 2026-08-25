@@ -47,6 +47,13 @@
                                         {{ __('Edit') }}
                                     </flux:button>
 
+                                    <flux:button variant="ghost"
+                                        size="sm"
+                                        icon="arrows-pointing-out"
+                                        wire:click="$dispatchTo('admin.full-page-dynamic-content-editor', 'open-full-page-dynamic-content-editor', { dynamicContentId: {{ $item->id }} })">
+                                        {{ __('Full page edit') }}
+                                    </flux:button>
+
                                     <livewire:admin.import-export-dynamic-content :content="$item" :key="'import-export-'.$item->id" />
 
                                     <livewire:admin.delete-dynamic-content :content="$item" :key="'delete-'.$item->id" />
@@ -72,5 +79,7 @@
             </div>
         @endif
     </flux:card>
+
+    <livewire:admin.full-page-dynamic-content-editor />
 
 </x-app.page>

@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\Modelable;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -24,15 +26,23 @@ class SectionManager extends Component
 
     private const array UPLOAD_FIELD_TYPES = [SectionFieldType::ImageUpload, SectionFieldType::DownloadableFile];
 
+    #[Modelable]
     public array $sections = [];
+
+    #[Locked]
+    public ?string $editorId = null;
 
     public bool $addSectionModalOpen = false;
 
     public string $sectionSearch = '';
 
-    public function mount(array $initialSections = []): void
+    public function mount(array $initialSections = [], ?string $editorId = null): void
     {
-        $this->sections = collect($initialSections)->keyBy('key')->toArray();
+        $this->editorId = $editorId;
+
+        if ($this->sections === []) {
+            $this->sections = collect($initialSections)->keyBy('key')->toArray();
+        }
     }
 
     #[Computed]
@@ -138,8 +148,12 @@ class SectionManager extends Component
     }
 
     #[On('dc-saved')]
-    public function saveSections(int $dynamicContentId): void
+    public function saveSections(int $dynamicContentId, ?string $editorId = null): void
     {
+        if ($editorId !== null && $editorId !== $this->editorId) {
+            return;
+        }
+
         $this->validateSectionFields();
         $this->processSectionUploads();
 
@@ -163,7 +177,11 @@ class SectionManager extends Component
             }
         }
 
-        $this->dispatch('dc-sections-saved');
+        $event = $this->editorId === null
+            ? 'dc-sections-saved'
+            : 'dc-sections-saved.'.$this->editorId;
+
+        $this->dispatch($event);
     }
 
     public function render(): View
