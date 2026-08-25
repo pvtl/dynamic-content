@@ -33,7 +33,7 @@
                 <img
                     src="{{ $previewUrl }}"
                     alt="{{ $fileName }}"
-                    class="max-h-44 w-full object-cover" />
+                    class="max-h-[250px] w-full object-cover" />
                 <div
                     class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors hover:bg-black/20">
                     <span

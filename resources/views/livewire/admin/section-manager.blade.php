@@ -4,7 +4,7 @@
             @foreach ($sections as $index => $section)
                 @php $sectionConfig = $this->sectionConfigs[$section['slug']] ?? null @endphp
                 @if ($sectionConfig)
-                    <flux:card x-data="{ collapsed: {{ $loop->first ? 'false' : 'true' }} }"
+                    <flux:card x-data="{ collapsed: true }"
                         wire:key="{{ $section['key'] }}"
                         wire:sort:item="{{ $section['key'] }}"
                         class="p-3">
@@ -55,32 +55,44 @@
     @endif
 
     <flux:button icon="plus"
-        wire:click="$set('addSectionModalOpen', true)">
+        wire:click="openAddSectionModal">
         {{ __('Add section') }}
     </flux:button>
 
     <flux:modal name="add-section"
         wire:model="addSectionModalOpen"
-        class="max-w-lg">
-        <flux:heading size="lg"
-            level="2"
-            class="mb-4">{{ __('Add section') }}</flux:heading>
+        class="h-[85vh]! w-full max-w-4xl overflow-hidden">
+        <div class="flex h-full min-h-0 flex-col">
+            <flux:heading size="lg"
+                level="2"
+                class="mb-4">{{ __('Add section') }}</flux:heading>
 
-        <div class="space-y-2">
-            @foreach ($this->sectionConfigs as $sectionOption)
-                <button type="button"
-                    wire:click="addSection('{{ $sectionOption['slug'] }}')"
-                    class="w-full rounded-lg border border-zinc-200 px-4 py-3 text-left transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:bg-zinc-800">
-                    <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $sectionOption['slug'] }}</p>
-                    <p class="mt-0.5 text-xs text-zinc-500">{{ $sectionOption['description'] }}</p>
-                </button>
-            @endforeach
-        </div>
+            <flux:input wire:model.live.debounce.300ms="sectionSearch"
+                icon="magnifying-glass"
+                type="search"
+                :placeholder="__('Search by section name or description')"
+                autofocus />
 
-        <div class="mt-4 flex justify-end border-t border-zinc-200 pt-4 dark:border-zinc-700">
-            <flux:modal.close>
-                <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-            </flux:modal.close>
+            <div class="mt-4 grid min-h-0 flex-1 content-start gap-2 overflow-y-auto md:grid-cols-2">
+                @forelse ($this->filteredSectionConfigs as $sectionOption)
+                    <button type="button"
+                        wire:click="addSection('{{ $sectionOption['slug'] }}')"
+                        class="h-full w-full rounded-lg border border-zinc-200 px-4 py-3 text-left transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:bg-zinc-800">
+                        <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $sectionOption['name'] ?? $sectionOption['slug'] }}</p>
+                        <p class="mt-0.5 text-xs text-zinc-500">{{ $sectionOption['description'] }}</p>
+                    </button>
+                @empty
+                    <div class="col-span-full py-8 text-center">
+                        <flux:text>{{ __('No sections match your search.') }}</flux:text>
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="mt-4 flex shrink-0 justify-end border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <flux:modal.close>
+                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+            </div>
         </div>
     </flux:modal>
 </div>

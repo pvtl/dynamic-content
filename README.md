@@ -15,6 +15,12 @@ Dynamic content management with configurable sections for Laravel Livewire and F
 composer require pvtl/dynamic-content
 ```
 
+Add this to your application's main Tailwind stylesheet, usually `resources/css/app.css`, so Tailwind generates the utilities used by the package views:
+
+```css
+@source '../../vendor/pvtl/dynamic-content/resources/views/**/*.blade.php';
+```
+
 Publish resources and run migrations:
 
 ```bash

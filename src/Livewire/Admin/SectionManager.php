@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pvtl\DynamicContent\Livewire\Admin;
 
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -25,6 +26,8 @@ class SectionManager extends Component
 
     public bool $addSectionModalOpen = false;
 
+    public string $sectionSearch = '';
+
     public function mount(array $initialSections = []): void
     {
         $this->sections = collect($initialSections)->keyBy('key')->toArray();
@@ -34,6 +37,32 @@ class SectionManager extends Component
     public function sectionConfigs(): array
     {
         return collect(config('sections', []))->keyBy('slug')->toArray();
+    }
+
+    #[Computed]
+    public function filteredSectionConfigs(): array
+    {
+        $search = Str::squish($this->sectionSearch);
+
+        if ($search === '') {
+            return $this->sectionConfigs();
+        }
+
+        return collect($this->sectionConfigs())
+            ->filter(function (array $sectionConfig) use ($search): bool {
+                $name = $sectionConfig['name'] ?? $sectionConfig['slug'];
+                $description = $sectionConfig['description'] ?? '';
+
+                return Str::contains($name, $search, true)
+                    || Str::contains($description, $search, true);
+            })
+            ->all();
+    }
+
+    public function openAddSectionModal(): void
+    {
+        $this->sectionSearch = '';
+        $this->addSectionModalOpen = true;
     }
 
     public function addSection(string $slug): void
@@ -55,6 +84,7 @@ class SectionManager extends Component
                 ->all(),
         ];
 
+        $this->sectionSearch = '';
         $this->addSectionModalOpen = false;
     }
 
