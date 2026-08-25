@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Pvtl\DynamicContent\Livewire\Admin;
 
+use Flux\Flux;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -207,8 +209,49 @@ class SectionManager extends Component
         );
 
         if (! empty($rules)) {
-            $this->validate($rules, [], $attributes);
+            try {
+                $this->validate($rules, [], $attributes);
+            } catch (ValidationException $exception) {
+                Flux::toast(
+                    $this->validationToastText($exception),
+                    variant: 'danger',
+                    heading: __('Please fix the section errors'),
+                );
+
+                throw $exception;
+            }
         }
+    }
+
+    protected function validationToastText(ValidationException $exception): string
+    {
+        return collect($exception->errors())
+            ->flatMap(function (array $messages, string $path): array {
+                $sectionLabel = $this->sectionLabelForFieldPath($path);
+
+                return collect($messages)
+                    ->map(fn (string $message): string => "{$sectionLabel}: {$message}")
+                    ->all();
+            })
+            ->implode(' • ');
+    }
+
+    protected function sectionLabelForFieldPath(string $path): string
+    {
+        $sectionKey = explode('.', $path)[1] ?? null;
+        $sectionPosition = array_search($sectionKey, array_keys($this->sections), strict: true);
+        $sectionSlug = $sectionKey ? ($this->sections[$sectionKey]['slug'] ?? null) : null;
+        $sectionConfig = $sectionSlug ? ($this->sectionConfigs()[$sectionSlug] ?? null) : null;
+        $sectionName = $sectionConfig['name'] ?? ($sectionSlug ? Str::headline($sectionSlug) : __('Unknown'));
+
+        if ($sectionPosition === false) {
+            return __('Section (:name)', ['name' => $sectionName]);
+        }
+
+        return __('Section :position (:name)', [
+            'position' => $sectionPosition + 1,
+            'name' => $sectionName,
+        ]);
     }
 
     protected function eachSectionField(callable $callback, array $onlyTypes = [], array $skipTypes = []): void
