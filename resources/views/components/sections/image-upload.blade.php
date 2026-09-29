@@ -1,12 +1,16 @@
 @props(['field' => [], 'value' => null])
 
 @php
+    if (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile::canUnserialize($value)) {
+        $value = \Livewire\Features\SupportFileUploads\TemporaryUploadedFile::unserializeFromLivewireRequest($value);
+    }
+
     $isTemporary = $value instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
     $isStoredFile = ! $isTemporary && is_string($value) && $value !== '';
 
     $previewUrl = match (true) {
         $isTemporary => $value->temporaryUrl(),
-        $isStoredFile => \Illuminate\Support\Facades\Storage::url($value),
+        $isStoredFile => \Illuminate\Support\Facades\Storage::disk(config('dynamic_content.disk'))->url($value),
         default => null,
     };
 

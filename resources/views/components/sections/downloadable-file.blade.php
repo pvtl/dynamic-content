@@ -1,6 +1,10 @@
 @props(['field' => [], 'value' => null])
 
 @php
+    if (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile::canUnserialize($value)) {
+        $value = \Livewire\Features\SupportFileUploads\TemporaryUploadedFile::unserializeFromLivewireRequest($value);
+    }
+
     $isTemporary = $value instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
     $isStoredFile = ! $isTemporary && is_string($value) && $value !== '';
 
@@ -11,7 +15,7 @@
     };
 
     $fileSize = $isTemporary ? $value->getSize() : null;
-    $fileUrl = $isStoredFile ? \Illuminate\Support\Facades\Storage::url($value) : null;
+    $fileUrl = $isStoredFile ? \Illuminate\Support\Facades\Storage::disk(config('dynamic_content.disk'))->url($value) : null;
     $modelName = $attributes->get('name', $field['slug']);
 @endphp
 

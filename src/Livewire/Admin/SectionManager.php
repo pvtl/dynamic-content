@@ -195,6 +195,10 @@ class SectionManager extends Component
             callback: function (string $path, array $field): void {
                 $value = data_get($this, $path);
 
+                if (TemporaryUploadedFile::canUnserialize($value)) {
+                    $value = TemporaryUploadedFile::unserializeFromLivewireRequest($value);
+                }
+
                 if (! ($value instanceof TemporaryUploadedFile)) {
                     return;
                 }
