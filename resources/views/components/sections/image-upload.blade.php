@@ -7,20 +7,20 @@
 
     $isTemporary = $value instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
     $isStoredFile = ! $isTemporary && is_string($value) && $value !== '';
+    $temporaryFileExists = $isTemporary && $value->exists();
 
     $previewUrl = match (true) {
-        $isTemporary => $value->temporaryUrl(),
+        $isTemporary => $temporaryFileExists && $value->isPreviewable() ? $value->temporaryUrl() : null,
         $isStoredFile => \Illuminate\Support\Facades\Storage::disk(config('dynamic_content.disk'))->url($value),
         default => null,
     };
 
     $fileName = match (true) {
-        $isTemporary => $value->getClientOriginalName(),
+        $temporaryFileExists => $value->getClientOriginalName(),
         $isStoredFile => basename($value),
         default => null,
     };
 
-    $fileSize = $isTemporary ? $value->getSize() : null;
     $modelName = $attributes->get('name', $field['slug']);
 @endphp
 
@@ -54,7 +54,11 @@
         @endif
     </flux:file-upload>
 
-    @if ($previewUrl)
+    @if ($isTemporary && ! $previewUrl)
+        <flux:description>{{ __('This image cannot be previewed. Upload a replacement or remove it.') }}</flux:description>
+    @endif
+
+    @if ($isTemporary || $isStoredFile)
         <div x-data>
             <flux:button
                 variant="ghost"
